@@ -85,6 +85,24 @@ async function run() {
         res.send(result);
     })
 
+    // handle cancel
+
+    app.patch('/booking-cancel/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const options = { upsert: true };
+        const updateDoc={
+            $set: {
+                email: '',
+                availability: 'yes',
+                date: '',
+
+            }
+          }
+        const result = await roomCollection.updateOne(query,updateDoc,options);
+        res.send(result);
+    })
+
 
 
 
