@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app =express();
 const port = process.env.PORT || 5000;
@@ -34,10 +34,22 @@ async function run() {
     // await client.connect();
 
     const roomCollection = client.db("heavenHearth").collection('rooms');
+    const bookingCollection = client.db("heavenHearth").collection('booking');
 
     app.get('/rooms',async(req,res)=>{
-        const cursor = roomCollection.find()
-        const result = await cursor.toArray();
+        const minPrice = parseInt(req.query.minPrice) || 0;
+        const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+        const query = { price: { $gte: minPrice, $lte: maxPrice } };
+        const rooms = await roomCollection.find(query).toArray();
+        res.json(rooms);
+    })
+
+    // get room details by id
+
+    app.get('/rooms/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await roomCollection.findOne(query);
         res.send(result);
     })
 
