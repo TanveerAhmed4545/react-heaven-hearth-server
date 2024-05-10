@@ -34,7 +34,7 @@ async function run() {
     // await client.connect();
 
     const roomCollection = client.db("heavenHearth").collection('rooms');
-    const bookingCollection = client.db("heavenHearth").collection('booking');
+    // const bookingCollection = client.db("heavenHearth").collection('booking');
 
     app.get('/rooms',async(req,res)=>{
         const minPrice = parseInt(req.query.minPrice) || 0;
@@ -52,6 +52,30 @@ async function run() {
         const result = await roomCollection.findOne(query);
         res.send(result);
     })
+
+
+
+    // booking data patch
+
+    app.patch('/booking/:id',async(req,res)=>{
+        const id = req.params.id;
+        // console.log(id);
+        const bookData = req.body;
+        // console.log(bookData);
+        const query = {_id: new ObjectId(id)}
+        const options = { upsert: true };
+        const updateDoc={
+            $set: {
+                email: bookData.email,
+                availability: bookData.availability,
+                date: bookData.date
+
+            }
+          }
+        const result = await roomCollection.updateOne(query,updateDoc,options);
+        res.send(result);
+    })
+
 
 
 
