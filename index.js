@@ -55,6 +55,15 @@ async function run() {
 
 
 
+    // get all booking by specific user
+
+    app.get('/my-books/:email',async(req,res)=>{
+        const email = req.params.email;
+        const query = {email: email}
+        const result = await roomCollection.find(query).toArray()
+        res.send(result)
+      })
+
     // booking data patch
 
     app.patch('/booking/:id',async(req,res)=>{
