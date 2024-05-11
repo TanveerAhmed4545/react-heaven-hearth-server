@@ -34,7 +34,7 @@ async function run() {
     // await client.connect();
 
     const roomCollection = client.db("heavenHearth").collection('rooms');
-    // const bookingCollection = client.db("heavenHearth").collection('booking');
+    const reviewsCollection = client.db("heavenHearth").collection('reviews');
 
     app.get('/rooms',async(req,res)=>{
         const minPrice = parseInt(req.query.minPrice) || 0;
@@ -124,6 +124,27 @@ async function run() {
         const result = await roomCollection.updateOne(query,updateDoc,options);
         res.send(result);
     })
+
+
+    // review get 
+
+    app.get('/reviews',async(req,res)=>{
+      const cursor = reviewsCollection.find().sort({ timestamp: -1 });
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+
+
+    // review add
+
+    app.post('/reviews',async(req,res)=>{
+      const {userName,roomId,userRating,userComment,timestamp } = req.body;
+      const newReview = { userName,roomId,userRating,userComment, timestamp };
+      // console.log(newReview);
+      const result = await reviewsCollection.insertOne(newReview);
+      res.send(result);
+  })
 
 
 
