@@ -39,7 +39,7 @@ async function run() {
     app.get('/rooms',async(req,res)=>{
         const minPrice = parseInt(req.query.minPrice) || 0;
         const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
-        const query = { price: { $gte: minPrice, $lte: maxPrice } };
+        const query = { price: { $gte: minPrice, $lte: maxPrice } , availability: 'yes' };
         const rooms = await roomCollection.find(query).toArray();
         res.json(rooms);
     })
@@ -84,6 +84,28 @@ async function run() {
         const result = await roomCollection.updateOne(query,updateDoc,options);
         res.send(result);
     })
+
+
+    // booking update
+
+    app.put('/booking-update/:id',async(req,res)=>{
+      const id = req.params.id;
+      // console.log(id);
+      const bookData = req.body;
+      // console.log(bookData);
+      const query = {_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const updateDoc={
+          $set: {
+              date: bookData.date
+
+          }
+        }
+      const result = await roomCollection.updateOne(query,updateDoc,options);
+      res.send(result);
+  })
+    
+
 
     // handle cancel
 
