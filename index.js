@@ -39,7 +39,8 @@ async function run() {
     app.get('/rooms',async(req,res)=>{
         const minPrice = parseInt(req.query.minPrice) || 0;
         const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
-        const query = { price: { $gte: minPrice, $lte: maxPrice } , availability: 'yes' };
+        // const query = { price: { $gte: minPrice, $lte: maxPrice } , availability: 'yes' };
+        const query = { price: { $gte: minPrice, $lte: maxPrice }};
         const rooms = await roomCollection.find(query).toArray();
         res.json(rooms);
     })
@@ -62,6 +63,14 @@ async function run() {
         const query = {email: email}
         const result = await roomCollection.find(query).toArray()
         res.send(result)
+      })
+
+
+      // featured rooms
+      app.get('/room',async(req,res)=>{
+        const cursor = roomCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
       })
 
     // booking data patch
