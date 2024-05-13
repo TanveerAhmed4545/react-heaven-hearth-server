@@ -14,7 +14,9 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173'
+    // 'http://localhost:5173',
+    'https://react-haven-hearth.web.app',
+    'https://react-haven-hearth.firebaseapp.com'
   ],
   credentials: true
 }));
@@ -74,7 +76,7 @@ async function run() {
     // jwt 
     app.post('/jwt',async(req,res)=>{
       const user = req.body;
-      console.log("user for token" , user);
+      // console.log("user for token" , user);
       const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET ,{expiresIn: '1h'})
 
       res
@@ -82,7 +84,7 @@ async function run() {
         httpOnly: true,
         // secure: true,
         // sameSite: 'none'
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production'? true : false ,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       })
       .send({success: true})
@@ -92,7 +94,12 @@ async function run() {
       const user = req.body;
       console.log("logging out",user)
       res
-      .clearCookie('token',{maxAge: 0})
+      .clearCookie('token',{
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'? true : false ,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge: 0,
+      })
       .send({success: true})
     })
 
@@ -281,8 +288,8 @@ app.delete('/booking-delete/:id',async(req,res)=>{
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
