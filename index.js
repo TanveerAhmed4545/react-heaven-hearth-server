@@ -213,8 +213,8 @@ async function run() {
     // review add
 
     app.post('/reviews',verifyToken,async(req,res)=>{
-      const {userName,roomId,userRating,userComment,timestamp } = req.body;
-      const newReview = { userName,roomId,userRating,userComment, timestamp };
+      const {userName,roomId,userRating,userComment,timestamp,userPhoto } = req.body;
+      const newReview = { userName,roomId,userRating,userComment, timestamp,userPhoto };
       // console.log(newReview);
       const result = await reviewsCollection.insertOne(newReview);
       res.send(result);
