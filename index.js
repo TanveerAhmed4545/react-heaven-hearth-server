@@ -67,6 +67,7 @@ async function run() {
 
     const roomCollection = client.db("heavenHearth").collection('rooms');
     const reviewsCollection = client.db("heavenHearth").collection('reviews');
+    const bookingCollection = client.db("heavenHearth").collection('booking');
 
 
 
@@ -117,18 +118,18 @@ async function run() {
 
 
 
-    // get all booking by specific user
+    // // get all booking by specific user
 
-    app.get('/my-books/:email',verifyToken,async(req,res)=>{
-      const tokenEmail = req.user.email;
-      const email = req.params.email;
-      if(tokenEmail !== email ){
-        return res.status(403).send({ message: 'forbidden access' })
-      }  
-        const query = {email: email}
-        const result = await roomCollection.find(query).toArray()
-        res.send(result)
-      })
+    // app.get('/my-books/:email',verifyToken,async(req,res)=>{
+    //   const tokenEmail = req.user.email;
+    //   const email = req.params.email;
+    //   if(tokenEmail !== email ){
+    //     return res.status(403).send({ message: 'forbidden access' })
+    //   }  
+    //     const query = {email: email}
+    //     const result = await roomCollection.find(query).toArray()
+    //     res.send(result)
+    //   })
 
 
       // featured rooms
@@ -149,9 +150,9 @@ async function run() {
         const options = { upsert: true };
         const updateDoc={
             $set: {
-                email: bookData.email,
+                // email: bookData.email,
                 availability: bookData.availability,
-                date: bookData.date
+                // date: bookData.date
 
             }
           }
@@ -160,24 +161,24 @@ async function run() {
     })
 
 
-    // booking update
+  //   // booking update
 
-    app.put('/booking-update/:id',async(req,res)=>{
-      const id = req.params.id;
-      // console.log(id);
-      const bookData = req.body;
-      // console.log(bookData);
-      const query = {_id: new ObjectId(id)}
-      const options = { upsert: true };
-      const updateDoc={
-          $set: {
-              date: bookData.date
+  //   app.put('/booking-update/:id',async(req,res)=>{
+  //     const id = req.params.id;
+  //     // console.log(id);
+  //     const bookData = req.body;
+  //     // console.log(bookData);
+  //     const query = {_id: new ObjectId(id)}
+  //     const options = { upsert: true };
+  //     const updateDoc={
+  //         $set: {
+  //             date: bookData.date
 
-          }
-        }
-      const result = await roomCollection.updateOne(query,updateDoc,options);
-      res.send(result);
-  })
+  //         }
+  //       }
+  //     const result = await roomCollection.updateOne(query,updateDoc,options);
+  //     res.send(result);
+  // })
     
 
 
@@ -189,9 +190,9 @@ async function run() {
         const options = { upsert: true };
         const updateDoc={
             $set: {
-                email: '',
+                // email: '',
                 availability: 'yes',
-                date: '',
+                // date: '',
 
             }
           }
@@ -221,6 +222,62 @@ async function run() {
   })
 
 
+
+  // booking post
+  app.post('/booking-post',async(req,res)=>{
+    const newBooking = req.body;
+    const result = await bookingCollection.insertOne(newBooking);
+    res.send(result);
+})
+
+// get  for reviews
+app.get('/booking-review/:id',async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const result = await bookingCollection.findOne(query);
+  res.send(result);
+})
+
+ // get all booking by specific user
+
+ app.get('/my-booking/:email',verifyToken,async(req,res)=>{
+  const tokenEmail = req.user.email;
+  const email = req.params.email;
+  if(tokenEmail !== email ){
+    return res.status(403).send({ message: 'forbidden access' })
+  }  
+    const query = {email: email}
+    const result = await bookingCollection.find(query).toArray()
+    res.send(result)
+  })
+
+
+   // booking update
+
+   app.patch('/book-update/:id',async(req,res)=>{
+    const id = req.params.id;
+    // console.log(id);
+    const bookData = req.body;
+    // console.log(bookData);
+    const query = {_id: new ObjectId(id)}
+    const options = { upsert: true };
+    const updateDoc={
+        $set: {
+            date: bookData.date
+
+        }
+      }
+    const result = await bookingCollection.updateOne(query,updateDoc,options);
+    res.send(result);
+})
+
+// delete
+app.delete('/booking-delete/:id',async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const result = await bookingCollection.deleteOne(query);
+  res.send(result);
+})
 
 
     // Send a ping to confirm a successful connection
