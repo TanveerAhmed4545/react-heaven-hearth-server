@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config()
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config()
+
+
 const app =express();
 const port = process.env.PORT || 5000;
 
@@ -15,6 +18,7 @@ const port = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://react-haven-hearth.web.app',
     'https://react-haven-hearth.firebaseapp.com'
   ],
@@ -70,6 +74,7 @@ async function run() {
     const roomCollection = client.db("heavenHearth").collection('rooms');
     const reviewsCollection = client.db("heavenHearth").collection('reviews');
     const bookingCollection = client.db("heavenHearth").collection('booking');
+    const paymentCollection = client.db("heavenHearth").collection("payments");
 
 
 
@@ -168,24 +173,7 @@ async function run() {
     })
 
 
-  //   // booking update
-
-  //   app.put('/booking-update/:id',async(req,res)=>{
-  //     const id = req.params.id;
-  //     // console.log(id);
-  //     const bookData = req.body;
-  //     // console.log(bookData);
-  //     const query = {_id: new ObjectId(id)}
-  //     const options = { upsert: true };
-  //     const updateDoc={
-  //         $set: {
-  //             date: bookData.date
-
-  //         }
-  //       }
-  //     const result = await roomCollection.updateOne(query,updateDoc,options);
-  //     res.send(result);
-  // })
+  
     
 
 
@@ -197,9 +185,9 @@ async function run() {
         const options = { upsert: true };
         const updateDoc={
             $set: {
-                // email: '',
+                
                 availability: 'yes',
-                // date: '',
+                
 
             }
           }
@@ -285,6 +273,64 @@ app.delete('/booking-delete/:id',async(req,res)=>{
   const result = await bookingCollection.deleteOne(query);
   res.send(result);
 })
+
+// payment
+app.post('/create-payment-intent',async(req,res)=>{
+  const {price} = req.body;
+  const amount = parseInt(price * 100);
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: 'usd',
+    payment_method_types: ['card']
+  })
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  })
+
+})
+
+
+// // payment data
+
+app.post('/payments',async(req,res)=>{
+  
+try {
+const payment = req.body;
+const paymentResult = await paymentCollection.insertOne(payment);
+
+console.log('payment info', payment);
+
+const query = {
+  _id: {
+    $in: payment.bookIds.map(id => new ObjectId(id))
+  }
+};
+
+const deleteResult = await bookingCollection.deleteMany(query);
+
+// Combine the results into a single response object
+const response = {
+  paymentResult
+};
+
+ res.status(200).send(response);
+} catch (error) {
+console.error('Error processing payment:', error);
+res.status(500).json({ error: 'Internal Server Error' });
+}
+});
+
+
+app.get('/payments/:email',verifyToken,async(req,res)=>{
+  const query = {email: req.params.email}
+  const result = await paymentCollection.find(query).toArray();
+  res.send(result);
+})
+
+
+
 
 
     // Send a ping to confirm a successful connection
